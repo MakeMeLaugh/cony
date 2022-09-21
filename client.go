@@ -32,11 +32,19 @@ type Client struct {
 	errs         chan error
 	blocking     chan amqp.Blocking
 	run          int32        // bool
-	conn         atomic.Value //*amqp.Connection
+	conn         atomic.Value // *amqp.Connection
 	bo           Backoffer
 	attempt      int32
 	l            sync.Mutex
 	config       amqp.Config
+}
+
+func (c *Client) GetConn() *amqp.Connection {
+	r, ok := c.conn.Load().(*amqp.Connection)
+	if !ok {
+		return nil
+	}
+	return r
 }
 
 // Declare used to declare queues/exchanges/bindings.

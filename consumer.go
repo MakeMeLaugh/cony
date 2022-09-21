@@ -45,7 +45,7 @@ func (c *Consumer) Cancel() {
 	defer c.m.Unlock()
 
 	if !c.dead {
-		//close(c.deliveries)
+		close(c.deliveries)
 		close(c.stop)
 		c.dead = true
 	}
@@ -82,7 +82,6 @@ func (c *Consumer) serve(client mqDeleter, ch mqChannel) {
 	for {
 		select {
 		case <-c.stop:
-			close(c.deliveries)
 			client.deleteConsumer(c)
 			ch.Close()
 			return
@@ -124,6 +123,7 @@ func Tag(tag string) ConsumerOpt {
 }
 
 // AutoTag set automatically generated tag like this
+//
 //	fmt.Sprintf(QueueName+"-pid-%d@%s", os.Getpid(), os.Hostname())
 func AutoTag() ConsumerOpt {
 	return func(c *Consumer) {
