@@ -47,6 +47,22 @@ func (c *Client) GetConn() *amqp.Connection {
 	return r
 }
 
+func (c *Client) DeleteQueue(name string, ifUnused, ifEmpty, noWait bool) error {
+	r, ok := c.conn.Load().(*amqp.Connection)
+	if !ok {
+		return ErrNoConnection
+	}
+	cc, err := r.Channel()
+	if err != nil {
+		return err
+	}
+	if _, err = cc.QueueDelete(name, ifUnused, ifEmpty, noWait); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Declare used to declare queues/exchanges/bindings.
 // Declaration is saved and will be re-run every time Client gets connection
 func (c *Client) Declare(d []Declaration) {
