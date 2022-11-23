@@ -79,8 +79,13 @@ func (c *Consumer) serve(client mqDeleter, ch mqChannel) {
 		return
 	}
 
+	chanErrs := make(chan *amqp.Error)
+	ch.NotifyClose(chanErrs)
+
 	for {
 		select {
+		case e := <-chanErrs:
+			c.errs <- e
 		case <-c.stop:
 			client.deleteConsumer(c)
 			ch.Close()
